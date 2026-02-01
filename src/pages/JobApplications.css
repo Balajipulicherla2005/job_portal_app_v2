@@ -49,18 +49,19 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
   display: flex;
-  gap: 15px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .filter-button {
-  padding: 10px 20px;
+  padding: 8px 16px;
   border: 2px solid #ddd;
   background: white;
   color: #666;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.85rem;
   transition: all 0.3s;
 }
 
@@ -89,7 +90,7 @@
   transition: transform 0.3s, box-shadow 0.3s;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .applicant-card:hover {
@@ -127,11 +128,22 @@
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
+  text-transform: capitalize;
 }
 
 .status-pending {
   background-color: #ffeaa7;
-  color: #d63031;
+  color: #d68910;
+}
+
+.status-reviewing {
+  background-color: #74b9ff;
+  color: #0056b3;
+}
+
+.status-shortlisted {
+  background-color: #a29bfe;
+  color: #5b2c91;
 }
 
 .status-accepted {
@@ -174,6 +186,17 @@
   font-size: 0.95rem;
 }
 
+.cover-letter-text {
+  color: #2c3e50;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
 .resume-link {
   color: #667eea;
   text-decoration: none;
@@ -186,29 +209,101 @@
   text-decoration: underline;
 }
 
-.action-buttons {
+/* Status Update Section */
+.status-update-section {
   display: flex;
+  align-items: center;
   gap: 10px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
+.status-label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.status-select {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.status-select:hover {
+  border-color: #667eea;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.status-select:disabled {
+  background: #e9ecef;
+  cursor: not-allowed;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.review-button,
+.shortlist-button,
 .accept-button,
 .reject-button {
   flex: 1;
-  padding: 10px 20px;
+  min-width: 80px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
-.accept-button {
-  background-color: #27ae60;
+.review-button {
+  background-color: #74b9ff;
   color: white;
 }
 
-.accept-button:hover {
-  background-color: #229954;
+.review-button:hover:not(:disabled) {
+  background-color: #0984e3;
+}
+
+.shortlist-button {
+  background-color: #a29bfe;
+  color: white;
+}
+
+.shortlist-button:hover:not(:disabled) {
+  background-color: #6c5ce7;
+}
+
+.accept-button {
+  background-color: #00b894;
+  color: white;
+}
+
+.accept-button:hover:not(:disabled) {
+  background-color: #00a085;
 }
 
 .reject-button {
@@ -216,8 +311,16 @@
   color: white;
 }
 
-.reject-button:hover {
+.reject-button:hover:not(:disabled) {
   background-color: #c0392b;
+}
+
+.review-button:disabled,
+.shortlist-button:disabled,
+.accept-button:disabled,
+.reject-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .empty-state {
@@ -270,5 +373,17 @@
 
   .action-buttons {
     flex-direction: column;
+  }
+
+  .review-button,
+  .shortlist-button,
+  .accept-button,
+  .reject-button {
+    width: 100%;
+  }
+
+  .status-update-section {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

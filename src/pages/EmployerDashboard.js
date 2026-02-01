@@ -41,7 +41,41 @@ const EmployerDashboard = () => {
     );
   }
 
-  const { statistics, recentApplications, recentJobs } = dashboard;
+  // Safe destructuring with defaults
+  const { 
+    statistics = {
+      totalJobs: 0,
+      jobStatusCounts: { active: 0, draft: 0, closed: 0 },
+      totalApplications: 0,
+      applicationStatusCounts: { pending: 0, reviewing: 0, shortlisted: 0, rejected: 0, accepted: 0 },
+      profileCompletion: 0
+    }, 
+    recentApplications = [], 
+    recentJobs = [] 
+  } = dashboard;
+
+  // Helper function to safely get applicant name
+  const getApplicantName = (application) => {
+    if (!application) return 'Unknown Applicant';
+    
+    // Try different possible structures
+    if (application.jobSeeker?.jobSeekerProfile?.fullName) {
+      return application.jobSeeker.jobSeekerProfile.fullName;
+    }
+    if (application.jobSeeker?.fullName) {
+      return application.jobSeeker.fullName;
+    }
+    if (application.applicantName) {
+      return application.applicantName;
+    }
+    if (application.jobSeeker?.email) {
+      return application.jobSeeker.email;
+    }
+    return 'Unknown Applicant';
+  };
+
+  // Filter out null/invalid applications
+  const validApplications = (recentApplications || []).filter(app => app !== null && app !== undefined);
 
   return (
     <div className="dashboard-container">
@@ -57,7 +91,7 @@ const EmployerDashboard = () => {
         <div className="stat-card">
           <div className="stat-icon">💼</div>
           <div className="stat-content">
-            <h3>{statistics.totalJobs}</h3>
+            <h3>{statistics?.totalJobs || 0}</h3>
             <p>Total Jobs Posted</p>
           </div>
         </div>
@@ -65,7 +99,7 @@ const EmployerDashboard = () => {
         <div className="stat-card active">
           <div className="stat-icon">✅</div>
           <div className="stat-content">
-            <h3>{statistics.jobStatusCounts.active}</h3>
+            <h3>{statistics?.jobStatusCounts?.active || 0}</h3>
             <p>Active Jobs</p>
           </div>
         </div>
@@ -73,7 +107,7 @@ const EmployerDashboard = () => {
         <div className="stat-card draft">
           <div className="stat-icon">📝</div>
           <div className="stat-content">
-            <h3>{statistics.jobStatusCounts.draft}</h3>
+            <h3>{statistics?.jobStatusCounts?.draft || 0}</h3>
             <p>Draft Jobs</p>
           </div>
         </div>
@@ -81,7 +115,7 @@ const EmployerDashboard = () => {
         <div className="stat-card closed">
           <div className="stat-icon">🔒</div>
           <div className="stat-content">
-            <h3>{statistics.jobStatusCounts.closed}</h3>
+            <h3>{statistics?.jobStatusCounts?.closed || 0}</h3>
             <p>Closed Jobs</p>
           </div>
         </div>
@@ -89,7 +123,7 @@ const EmployerDashboard = () => {
         <div className="stat-card">
           <div className="stat-icon">📊</div>
           <div className="stat-content">
-            <h3>{statistics.totalApplications}</h3>
+            <h3>{statistics?.totalApplications || 0}</h3>
             <p>Total Applications</p>
           </div>
         </div>
@@ -97,7 +131,7 @@ const EmployerDashboard = () => {
         <div className="stat-card pending">
           <div className="stat-icon">⏳</div>
           <div className="stat-content">
-            <h3>{statistics.applicationStatusCounts.pending}</h3>
+            <h3>{statistics?.applicationStatusCounts?.pending || 0}</h3>
             <p>Pending Review</p>
           </div>
         </div>
@@ -109,13 +143,13 @@ const EmployerDashboard = () => {
         <div className="progress-bar">
           <div 
             className="progress-fill" 
-            style={{ width: `${statistics.profileCompletion}%` }}
+            style={{ width: `${statistics?.profileCompletion || 0}%` }}
           ></div>
         </div>
         <p className="completion-text">
-          {statistics.profileCompletion}% Complete
+          {statistics?.profileCompletion || 0}% Complete
         </p>
-        {statistics.profileCompletion < 100 && (
+        {(statistics?.profileCompletion || 0) < 100 && (
           <Link to="/employer/profile" className="complete-profile-link">
             Complete Your Company Profile →
           </Link>
@@ -132,23 +166,23 @@ const EmployerDashboard = () => {
             </Link>
           </div>
           
-          {recentApplications.length > 0 ? (
+          {validApplications.length > 0 ? (
             <div className="applications-list">
-              {recentApplications.map((application) => (
-                <div key={application.id} className="application-item">
+              {validApplications.map((application) => (
+                <div key={application.id || Math.random()} className="application-item">
                   <div className="application-info">
-                    <h3>{application.jobSeeker.jobSeekerProfile.fullName}</h3>
+                    <h3>{getApplicantName(application)}</h3>
                     <p className="job-title">
-                      Applied for: {application.job.title}
+                      Applied for: {application.job?.title || application.jobTitle || 'Unknown Job'}
                     </p>
-                    <p className="location">{application.job.location}</p>
+                    <p className="location">{application.job?.location || application.jobLocation || 'N/A'}</p>
                   </div>
                   <div className="application-status">
-                    <span className={`status-badge ${application.status}`}>
-                      {application.status}
+                    <span className={`status-badge ${application.status || 'pending'}`}>
+                      {application.status || 'pending'}
                     </span>
                     <span className="application-date">
-                      {new Date(application.createdAt).toLocaleDateString()}
+                      {application.createdAt ? new Date(application.createdAt).toLocaleDateString() : 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -173,34 +207,34 @@ const EmployerDashboard = () => {
             </Link>
           </div>
           
-          {recentJobs.length > 0 ? (
+          {(recentJobs || []).length > 0 ? (
             <div className="jobs-list">
-              {recentJobs.map((job) => (
-                <div key={job.id} className="job-item">
+              {(recentJobs || []).map((job) => (
+                <div key={job?.id || Math.random()} className="job-item">
                   <div className="job-info">
-                    <h3>{job.title}</h3>
-                    <p className="location">{job.location}</p>
+                    <h3>{job?.title || 'Untitled Job'}</h3>
+                    <p className="location">{job?.location || 'N/A'}</p>
                     <p className="job-type">
-                      <span className={`type-badge ${job.jobType}`}>
-                        {job.jobType}
+                      <span className={`type-badge ${job?.jobType || 'full-time'}`}>
+                        {job?.jobType || 'full-time'}
                       </span>
-                      <span className={`status-badge ${job.status}`}>
-                        {job.status}
+                      <span className={`status-badge ${job?.status || 'draft'}`}>
+                        {job?.status || 'draft'}
                       </span>
                     </p>
                     <p className="job-date">
-                      Posted: {new Date(job.createdAt).toLocaleDateString()}
+                      Posted: {job?.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                   <div className="job-actions">
                     <Link 
-                      to={`/employer/jobs/${job.id}/applications`} 
+                      to={`/employer/jobs/${job?.id}/applications`} 
                       className="btn-secondary btn-small"
                     >
                       View Applications
                     </Link>
                     <Link 
-                      to={`/employer/jobs/edit/${job.id}`} 
+                      to={`/employer/jobs/edit/${job?.id}`} 
                       className="btn-link"
                     >
                       Edit
@@ -225,23 +259,23 @@ const EmployerDashboard = () => {
         <h2>Application Status Overview</h2>
         <div className="status-grid">
           <div className="status-item">
-            <div className="status-count">{statistics.applicationStatusCounts.pending}</div>
+            <div className="status-count">{statistics?.applicationStatusCounts?.pending || 0}</div>
             <div className="status-label">Pending</div>
           </div>
           <div className="status-item">
-            <div className="status-count">{statistics.applicationStatusCounts.reviewing}</div>
+            <div className="status-count">{statistics?.applicationStatusCounts?.reviewing || 0}</div>
             <div className="status-label">Reviewing</div>
           </div>
           <div className="status-item">
-            <div className="status-count">{statistics.applicationStatusCounts.shortlisted}</div>
+            <div className="status-count">{statistics?.applicationStatusCounts?.shortlisted || 0}</div>
             <div className="status-label">Shortlisted</div>
           </div>
           <div className="status-item">
-            <div className="status-count">{statistics.applicationStatusCounts.rejected}</div>
+            <div className="status-count">{statistics?.applicationStatusCounts?.rejected || 0}</div>
             <div className="status-label">Rejected</div>
           </div>
           <div className="status-item">
-            <div className="status-count">{statistics.applicationStatusCounts.accepted}</div>
+            <div className="status-count">{statistics?.applicationStatusCounts?.accepted || 0}</div>
             <div className="status-label">Accepted</div>
           </div>
         </div>

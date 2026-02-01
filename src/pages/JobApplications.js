@@ -10,6 +10,7 @@ const JobApplications = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   useEffect(() => {
     fetchJobAndApplications();
@@ -17,13 +18,14 @@ const JobApplications = () => {
 
   const fetchJobAndApplications = async () => {
     try {
+      setLoading(true);
       const [jobResponse, applicationsResponse] = await Promise.all([
         api.get(`/jobs/${id}`),
-        api.get(`/employer/jobs/${id}/applications`),
+        api.get(`/applications/job/${id}`),  // Fixed API endpoint
       ]);
 
-      setJob(jobResponse.data);
-      setApplications(applicationsResponse.data.applications || []);
+      setJob(jobResponse.data.data || jobResponse.data);
+      setApplications(applicationsResponse.data.data || applicationsResponse.data.applications || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load applications');
@@ -34,11 +36,14 @@ const JobApplications = () => {
 
   const handleStatusChange = async (applicationId, newStatus) => {
     try {
+      setUpdatingStatus(applicationId);
       await api.put(`/applications/${applicationId}/status`, { status: newStatus });
-      toast.success(`Application ${newStatus.toLowerCase()} successfully`);
+      toast.success(`Application status updated to ${newStatus}`);
       fetchJobAndApplications();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update status');
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -46,6 +51,10 @@ const JobApplications = () => {
     switch (status?.toLowerCase()) {
       case 'pending':
         return 'status-pending';
+      case 'reviewing':
+        return 'status-reviewing';
+      case 'shortlisted':
+        return 'status-shortlisted';
       case 'accepted':
       case 'approved':
         return 'status-accepted';
@@ -56,10 +65,31 @@ const JobApplications = () => {
     }
   };
 
-  const filteredApplications = applications.filter((app) => {
+  const getApplicantName = (application) => {
+    return application.applicant_name || 
+           application.applicantName ||
+           application.jobSeeker?.jobSeekerProfile?.fullName ||
+           application.jobSeeker?.fullName ||
+           application.jobSeeker?.email ||
+           'Unknown Applicant';
+  };
+
+  const getApplicantEmail = (application) => {
+    return application.applicant_email || 
+           application.applicantEmail ||
+           application.jobSeeker?.email ||
+           'N/A';
+  };
+
+  const filteredApplications = (applications || []).filter((app) => {
+    if (!app) return false;
     if (filter === 'all') return true;
     return app.status?.toLowerCase() === filter;
   });
+
+  const getStatusCount = (status) => {
+    return (applications || []).filter(a => a?.status?.toLowerCase() === status).length;
+  };
 
   if (loading) {
     return <div className="loading-container">Loading applications...</div>;
@@ -74,8 +104,8 @@ const JobApplications = () => {
             <h1 className="page-title">{job.title}</h1>
             <div className="job-meta">
               <span>📍 {job.location}</span>
-              <span>💼 {job.job_type}</span>
-              <span>📝 {applications.length} Applications</span>
+              <span>💼 {job.jobType || job.job_type}</span>
+              <span>📝 {(applications || []).length} Applications</span>
             </div>
             <Link to="/employer/dashboard" className="back-link">
               ← Back to Dashboard
@@ -89,25 +119,37 @@ const JobApplications = () => {
             className={`filter-button ${filter === 'all' ? 'active' : ''}`}
             onClick={() => setFilter('all')}
           >
-            All ({applications.length})
+            All ({(applications || []).length})
           </button>
           <button
             className={`filter-button ${filter === 'pending' ? 'active' : ''}`}
             onClick={() => setFilter('pending')}
           >
-            Pending ({applications.filter((a) => a.status?.toLowerCase() === 'pending').length})
+            Pending ({getStatusCount('pending')})
+          </button>
+          <button
+            className={`filter-button ${filter === 'reviewing' ? 'active' : ''}`}
+            onClick={() => setFilter('reviewing')}
+          >
+            Reviewing ({getStatusCount('reviewing')})
+          </button>
+          <button
+            className={`filter-button ${filter === 'shortlisted' ? 'active' : ''}`}
+            onClick={() => setFilter('shortlisted')}
+          >
+            Shortlisted ({getStatusCount('shortlisted')})
           </button>
           <button
             className={`filter-button ${filter === 'accepted' ? 'active' : ''}`}
             onClick={() => setFilter('accepted')}
           >
-            Accepted ({applications.filter((a) => a.status?.toLowerCase() === 'accepted').length})
+            Accepted ({getStatusCount('accepted')})
           </button>
           <button
             className={`filter-button ${filter === 'rejected' ? 'active' : ''}`}
             onClick={() => setFilter('rejected')}
           >
-            Rejected ({applications.filter((a) => a.status?.toLowerCase() === 'rejected').length})
+            Rejected ({getStatusCount('rejected')})
           </button>
         </div>
 
@@ -118,10 +160,10 @@ const JobApplications = () => {
               <div key={application.id} className="applicant-card">
                 <div className="applicant-header">
                   <div>
-                    <h3 className="applicant-name">{application.applicant_name}</h3>
-                    <p className="applicant-email">{application.applicant_email}</p>
-                    {application.applicant_phone && (
-                      <p className="applicant-phone">📱 {application.applicant_phone}</p>
+                    <h3 className="applicant-name">{getApplicantName(application)}</h3>
+                    <p className="applicant-email">{getApplicantEmail(application)}</p>
+                    {(application.applicant_phone || application.applicantPhone) && (
+                      <p className="applicant-phone">📱 {application.applicant_phone || application.applicantPhone}</p>
                     )}
                   </div>
                   <span className={`status-badge ${getStatusClass(application.status)}`}>
@@ -130,27 +172,33 @@ const JobApplications = () => {
                 </div>
 
                 <div className="applicant-details">
-                  {application.applicant_location && (
+                  {(application.applicant_location || application.applicantLocation) && (
                     <div className="detail-item">
                       <span className="detail-label">Location:</span>
-                      <span>{application.applicant_location}</span>
+                      <span>{application.applicant_location || application.applicantLocation}</span>
                     </div>
                   )}
                   <div className="detail-item">
                     <span className="detail-label">Applied on:</span>
-                    <span>{new Date(application.created_at).toLocaleDateString()}</span>
+                    <span>{new Date(application.createdAt || application.created_at).toLocaleDateString()}</span>
                   </div>
-                  {application.applicant_skills && (
+                  {(application.applicant_skills || application.applicantSkills) && (
                     <div className="detail-item full-width">
                       <span className="detail-label">Skills:</span>
-                      <span>{application.applicant_skills}</span>
+                      <span>{application.applicant_skills || application.applicantSkills}</span>
+                    </div>
+                  )}
+                  {application.coverLetter && (
+                    <div className="detail-item full-width">
+                      <span className="detail-label">Cover Letter:</span>
+                      <p className="cover-letter-text">{application.coverLetter}</p>
                     </div>
                   )}
                 </div>
 
-                {application.resume_url && (
+                {(application.resume_url || application.resumeUrl) && (
                   <a
-                    href={application.resume_url}
+                    href={application.resume_url || application.resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="resume-link"
@@ -159,21 +207,59 @@ const JobApplications = () => {
                   </a>
                 )}
 
+                {/* Status Update Dropdown */}
+                <div className="status-update-section">
+                  <label className="status-label">Update Status:</label>
+                  <select
+                    className="status-select"
+                    value={application.status || 'pending'}
+                    onChange={(e) => handleStatusChange(application.id, e.target.value)}
+                    disabled={updatingStatus === application.id}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="reviewing">Reviewing</option>
+                    <option value="shortlisted">Shortlisted</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+
+                {/* Quick Action Buttons */}
                 <div className="action-buttons">
+                  {application.status?.toLowerCase() !== 'reviewing' && (
+                    <button
+                      onClick={() => handleStatusChange(application.id, 'reviewing')}
+                      className="review-button"
+                      disabled={updatingStatus === application.id}
+                    >
+                      👀 Review
+                    </button>
+                  )}
+                  {application.status?.toLowerCase() !== 'shortlisted' && (
+                    <button
+                      onClick={() => handleStatusChange(application.id, 'shortlisted')}
+                      className="shortlist-button"
+                      disabled={updatingStatus === application.id}
+                    >
+                      ⭐ Shortlist
+                    </button>
+                  )}
                   {application.status?.toLowerCase() !== 'accepted' && (
                     <button
-                      onClick={() => handleStatusChange(application.id, 'Accepted')}
+                      onClick={() => handleStatusChange(application.id, 'accepted')}
                       className="accept-button"
+                      disabled={updatingStatus === application.id}
                     >
-                      Accept
+                      ✅ Accept
                     </button>
                   )}
                   {application.status?.toLowerCase() !== 'rejected' && (
                     <button
-                      onClick={() => handleStatusChange(application.id, 'Rejected')}
+                      onClick={() => handleStatusChange(application.id, 'rejected')}
                       className="reject-button"
+                      disabled={updatingStatus === application.id}
                     >
-                      Reject
+                      ❌ Reject
                     </button>
                   )}
                 </div>
