@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'react-toastify';
 import './Jobs.css';
 
 const JobListPage = () => {
+  const { isAuthenticated, isJobSeeker } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set());
   const [filters, setFilters] = useState({
     search: '',
     jobType: '',
@@ -32,6 +35,21 @@ const JobListPage = () => {
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
+
+  // Fetch user's applications to determine which jobs they've applied to
+  const fetchUserApplications = useCallback(async () => {
+    if (!isAuthenticated || !isJobSeeker) return;
+    
+    try {
+      const response = await api.get('/applications/my-applications');
+      if (response.data.success) {
+        const appliedIds = new Set(response.data.data.map(app => app.jobId));
+        setAppliedJobIds(appliedIds);
+      }
+    } catch (error) {
+      console.error('Error fetching user applications:', error);
+    }
+  }, [isAuthenticated, isJobSeeker]);
 
   // Fetch jobs function
   const fetchJobs = useCallback(async (currentFilters, currentPage) => {
@@ -66,8 +84,14 @@ const JobListPage = () => {
   // Initial fetch
   useEffect(() => {
     fetchJobs(filters, pagination.page);
+    fetchUserApplications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Refresh applications when auth state changes
+  useEffect(() => {
+    fetchUserApplications();
+  }, [fetchUserApplications]);
 
   // Handle page changes
   useEffect(() => {
@@ -145,22 +169,29 @@ const JobListPage = () => {
   const formatSalary = (job) => {
     if (!job.salaryMin && !job.salaryMax) return 'Not specified';
     
-    const format = (num) => new Intl.NumberFormat('en-US', {
+    const format = (num) => new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       maximumFractionDigits: 0
     }).format(num);
 
     if (job.salaryMin && job.salaryMax) {
-      return `${format(job.salaryMin)} - ${format(job.salaryMax)} / ${job.salaryPeriod}`;
+      return `${format(job.salaryMin)} - ${format(job.salaryMax)} / ${job.salaryPeriod || 'year'}`;
     }
-    return job.salaryMin ? `${format(job.salaryMin)}+ / ${job.salaryPeriod}` : `Up to ${format(job.salaryMax)} / ${job.salaryPeriod}`;
+    return job.salaryMin ? `${format(job.salaryMin)}+ / ${job.salaryPeriod || 'year'}` : `Up to ${format(job.salaryMax)} / ${job.salaryPeriod || 'year'}`;
+  };
+
+  const isJobApplied = (jobId) => {
+    return appliedJobIds.has(jobId);
   };
 
   if (loading && jobs.length === 0) {
     return (
       <div className="jobs-page">
-        <div className="loading-container">Loading jobs...</div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading jobs...</p>
+        </div>
       </div>
     );
   }
@@ -266,10 +297,15 @@ const JobListPage = () => {
             </div>
           ) : (
             jobs.map(job => (
-              <Link to={`/jobs/${job.id}`} key={job.id} className="job-card">
+              <Link to={`/jobs/${job.id}`} key={job.id} className={`job-card ${isJobApplied(job.id) ? 'applied' : ''}`}>
                 <div className="job-card-header">
                   <h3 className="job-title">{job.title}</h3>
-                  <span className={`job-type ${job.jobType}`}>{job.jobType}</span>
+                  <div className="job-badges">
+                    {isJobApplied(job.id) && (
+                      <span className="applied-badge">✓ Applied</span>
+                    )}
+                    <span className={`job-type ${job.jobType}`}>{job.jobType}</span>
+                  </div>
                 </div>
 
                 <div className="job-company">
@@ -303,7 +339,9 @@ const JobListPage = () => {
                   <span className="job-posted">
                     Posted {new Date(job.createdAt).toLocaleDateString()}
                   </span>
-                  <button className="view-details-btn">View Details →</button>
+                  <button className="view-details-btn">
+                    {isJobApplied(job.id) ? 'View Application' : 'View Details'} →
+                  </button>
                 </div>
               </Link>
             ))

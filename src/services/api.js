@@ -113,12 +113,31 @@ export const jobService = {
   createJob: (data) => api.post('/jobs', data),
   updateJob: (id, data) => api.put(`/jobs/${id}`, data),
   deleteJob: (id) => api.delete(`/jobs/${id}`),
-  applyToJob: (id, data) => api.post(`/jobs/${id}/apply`, data),
+};
+
+// Also export as jobAPI for backward compatibility
+export const jobAPI = {
+  getJobs: (params) => api.get('/jobs', { params }),
+  getJobById: (id) => api.get(`/jobs/${id}`),
+  createJob: (data) => api.post('/jobs', data),
+  updateJob: (id, data) => api.put(`/jobs/${id}`, data),
+  deleteJob: (id) => api.delete(`/jobs/${id}`),
 };
 
 // Application service helper
 export const applicationService = {
   getMyApplications: () => api.get('/applications/my-applications'),
+  getApplicationById: (id) => api.get(`/applications/${id}`),
+  updateApplicationStatus: (id, status) => api.put(`/applications/${id}/status`, { status }),
+  submitApplication: (data) => api.post('/applications', data),
+  checkIfApplied: (jobId) => api.get(`/applications/check/${jobId}`),
+};
+
+// Also export as applicationAPI for backward compatibility
+export const applicationAPI = {
+  getMyApplications: () => api.get('/applications/my-applications'),
+  apply: (jobId, data) => api.post('/applications', { jobId, ...data }),
+  checkIfApplied: (jobId) => api.get(`/applications/check/${jobId}`),
   getApplicationById: (id) => api.get(`/applications/${id}`),
   updateApplicationStatus: (id, status) => api.put(`/applications/${id}/status`, { status }),
 };

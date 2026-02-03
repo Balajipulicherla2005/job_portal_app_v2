@@ -1,218 +1,316 @@
 .applications-page {
-  min-height: calc(100vh - 70px);
-  background-color: #f8f9fa;
-  padding: 40px 20px;
+  min-height: calc(100vh - 140px);
+  background-color: #f5f7fa;
+  padding: 2rem 1rem;
 }
 
 .applications-container {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
 .page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 1.5rem;
   text-align: center;
-  color: #2c3e50;
-  font-size: 2.5rem;
-  margin-bottom: 40px;
 }
 
-.filter-section {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
+.loading-container {
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #4361ee;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.retry-button {
+  background-color: #dc2626;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.retry-button:hover {
+  background-color: #b91c1c;
+}
+
+/* Filter Section */
+.filter-section {
+  display: flex;
   flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .filter-button {
-  padding: 10px 20px;
-  border: 2px solid #ddd;
-  background: white;
-  color: #666;
-  border-radius: 8px;
+  padding: 0.625rem 1rem;
+  border: 1px solid #e0e0e0;
+  background-color: white;
+  border-radius: 20px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s ease;
 }
 
 .filter-button:hover {
-  border-color: #667eea;
-  color: #667eea;
+  background-color: #f0f4ff;
+  border-color: #4361ee;
+  color: #4361ee;
 }
 
 .filter-button.active {
-  background-color: #667eea;
+  background-color: #4361ee;
+  border-color: #4361ee;
   color: white;
-  border-color: #667eea;
 }
 
+/* Applications List */
 .applications-list {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 1rem;
 }
 
 .application-card {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  background-color: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .application-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .application-header {
   display: flex;
   justify-content: space-between;
-  align-items: start;
-  margin-bottom: 20px;
-  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.application-info {
+  flex: 1;
 }
 
 .application-title {
-  color: #2c3e50;
-  font-size: 1.5rem;
-  margin-bottom: 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 0.25rem 0;
 }
 
 .application-company {
-  color: #667eea;
-  font-weight: 600;
-  font-size: 1.1rem;
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
 }
 
+/* Status Badges */
 .status-badge {
-  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
+  text-transform: capitalize;
   white-space: nowrap;
 }
 
 .status-pending {
-  background-color: #ffeaa7;
-  color: #d63031;
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-reviewing {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+}
+
+.status-shortlisted {
+  background-color: #dbeafe;
+  color: #2563eb;
 }
 
 .status-accepted {
-  background-color: #55efc4;
-  color: #00b894;
+  background-color: #d1fae5;
+  color: #059669;
 }
 
 .status-rejected {
-  background-color: #fab1a0;
-  color: #d63031;
+  background-color: #fee2e2;
+  color: #dc2626;
 }
 
+/* Application Details */
 .application-details {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  padding: 20px 0;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  padding: 1rem 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .detail-item {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.detail-label {
-  color: #666;
+  align-items: center;
+  gap: 0.5rem;
+  color: #555;
   font-size: 0.9rem;
-  font-weight: 600;
 }
 
-.detail-item span:last-child {
-  color: #2c3e50;
+.detail-icon {
   font-size: 1rem;
 }
 
+/* Application Footer */
 .application-footer {
-  margin-top: 20px;
   display: flex;
-  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
 .view-job-button {
-  background-color: #667eea;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  background-color: #4361ee;
   color: white;
-  padding: 10px 25px;
-  border-radius: 8px;
   text-decoration: none;
-  font-weight: 600;
-  transition: background-color 0.3s;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
 }
 
 .view-job-button:hover {
-  background-color: #764ba2;
+  background-color: #3651d4;
 }
 
+.withdraw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.25rem;
+  background-color: white;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.withdraw-button:hover {
+  background-color: #fee2e2;
+}
+
+/* Empty State */
 .empty-state {
-  background: white;
-  padding: 80px 20px;
-  border-radius: 10px;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 4rem 2rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
 }
 
 .empty-state p {
   color: #666;
   font-size: 1.1rem;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
 .browse-jobs-button {
-  background-color: #667eea;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 2rem;
+  background-color: #4361ee;
   color: white;
-  padding: 12px 30px;
-  border-radius: 8px;
   text-decoration: none;
+  border-radius: 8px;
   font-weight: 600;
-  display: inline-block;
-  transition: background-color 0.3s;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
 }
 
 .browse-jobs-button:hover {
-  background-color: #764ba2;
+  background-color: #3651d4;
 }
 
-.loading-text {
-  text-align: center;
-  color: #666;
-  font-size: 1.1rem;
-  padding: 40px;
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
+  .applications-page {
+    padding: 1rem;
+  }
+
   .page-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .filter-section {
-    flex-direction: column;
+    justify-content: center;
   }
 
   .filter-button {
-    width: 100%;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .application-header {
     flex-direction: column;
-  }
-
-  .status-badge {
-    align-self: flex-start;
+    gap: 0.75rem;
   }
 
   .application-details {
@@ -220,11 +318,11 @@
   }
 
   .application-footer {
-    justify-content: center;
+    flex-direction: column;
   }
 
-  .view-job-button {
+  .view-job-button,
+  .withdraw-button {
     width: 100%;
-    text-align: center;
   }
 }
